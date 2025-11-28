@@ -251,7 +251,7 @@
     function drawGacha() {
         // ダイヤ残高チェック (消費できるか確認)
         if (currentDiamond < COST_PER_DRAW) {
-            alertMsgEl.textContent = "ダイヤがなくなりました。ダイヤを補充してください。";
+            alertMsgEl.textContent = "ダイヤがなくなりました。結果をプリントに記録してください。";
             drawBtnEl.disabled = true;
             return;
         }
