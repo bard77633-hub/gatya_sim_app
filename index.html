@@ -3,46 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>10連ガチャシミュレーター</title>
+    <title>プレミアム10連ガチャ</title>
     <style>
-        body { font-family: sans-serif; text-align: center; padding: 20px; background-color: #f0f0f0; }
-        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        h1 { font-size: 24px; color: #333; }
-        .stats { display: flex; justify-content: space-around; margin: 20px 0; background: #eee; padding: 10px; border-radius: 4px; }
-        .stat-box { font-weight: bold; }
-        .stat-number { font-size: 20px; color: #007bff; }
-        .controls { margin: 20px 0; }
-        button { padding: 10px 20px; font-size: 16px; cursor: pointer; border: none; border-radius: 4px; margin: 5px; }
-        #drawBtn { background-color: #007bff; color: white; }
-        #drawBtn:disabled { background-color: #ccc; cursor: not-allowed; }
-        #resetBtn { background-color: #dc3545; color: white; }
-        .log-area { text-align: left; height: 300px; overflow-y: scroll; border: 1px solid #ddd; padding: 10px; margin-top: 10px; background: #fafafa; }
-        .result-row { border-bottom: 1px solid #eee; padding: 5px 0; font-size: 14px; }
-        .hit { color: red; font-weight: bold; }
-        .miss { color: #666; }
-        .alert { color: red; margin-top: 10px; font-weight: bold; height: 24px; }
+        /* 全体の背景：高級感のあるダークグラデーションとパターン */
+        body {
+            font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a0f3c 0%, #34206e 100%);
+            color: #fff;
+            min-height: 100vh;
+        }
+        
+        /* メインコンテナ：カードのような立体感とゴールドの枠 */
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(40, 30, 70, 0.9); /* 半透明の暗い背景 */
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            border: 3px solid #d4af37; /* ゴールドの枠線 */
+        }
+
+        /* 見出し：ゴールドのグラデーション文字 */
+        h1 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            background: linear-gradient(to right, #d4af37, #f7ef8a, #d4af37);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0px 2px 5px rgba(0,0,0,0.3);
+            font-weight: 800;
+        }
+
+        /* ステータス表示エリア */
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #554a8c;
+        }
+        .stat-box {
+            font-weight: bold;
+            color: #ccc;
+        }
+        .stat-number {
+            display: block;
+            font-size: 24px;
+            color: #fff;
+            text-shadow: 0 0 10px #6a5acd;
+            margin-top: 5px;
+        }
+        /* 当たり回数の強調 */
+        #hitCount { color: #ffd700; text-shadow: 0 0 15px #ffd700; }
+
+        /* ボタンエリア */
+        .controls { margin: 30px 0; }
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            border-radius: 50px; /* 丸みのあるボタン */
+            margin: 10px;
+            transition: transform 0.1s, filter 0.2s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        /* ボタンを押した時の凹み効果 */
+        button:active { transform: translateY(2px); box-shadow: 0 2px 5px rgba(0,0,0,0.4); }
+
+        /* メインのガチャボタン：ゴールドの立体感 */
+        #drawBtn {
+            background: linear-gradient(to bottom, #f6d365 0%, #fda085 100%);
+            color: #521d03;
+            border: 2px solid #fff;
+            box-shadow: inset 0 2px 0 rgba(255,255,255,0.5), 0 5px 15px rgba(246, 211, 101, 0.4);
+            text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+        }
+        /* ボタンのキラキラエフェクト（疑似要素） */
+        #drawBtn::after {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(to bottom right, rgba(255,255,255,0) 30%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0) 70%);
+            transform: rotate(-45deg);
+            animation: shiny 3s infinite linear; /* 下の@keyframesで定義 */
+        }
+
+        #drawBtn:disabled {
+            background: #555;
+            color: #ccc;
+            border-color: #333;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        #drawBtn:disabled::after { animation: none; }
+
+        /* リセットボタン */
+        #resetBtn {
+            background: linear-gradient(to bottom, #ff6b6b, #c92a2a);
+            color: white;
+            border: 1px solid #ffcccc;
+        }
+
+        /* ログエリア */
+        .log-area {
+            text-align: left;
+            height: 300px;
+            overflow-y: scroll;
+            border: 2px solid #554a8c;
+            padding: 15px;
+            margin-top: 20px;
+            background: rgba(0,0,0,0.4); /* 暗い半透明 */
+            border-radius: 10px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+        /* スクロールバーのデザイン（Chrome/Safari用） */
+        .log-area::-webkit-scrollbar { width: 10px; }
+        .log-area::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 5px; }
+        .log-area::-webkit-scrollbar-thumb { background: #554a8c; border-radius: 5px; }
+
+        .result-row {
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding: 8px 0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        /* 当たり演出：金色に発光 */
+        .hit {
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 1.1em;
+            text-shadow: 0 0 10px #ffd700, 0 0 20px #ff8c00; /* 強い光彩 */
+        }
+        .miss { color: #a9a9a9; }
+        
+        .alert { color: #ff6b6b; margin-top: 10px; font-weight: bold; height: 24px; text-shadow: 0 0 5px rgba(255,0,0,0.5); }
+
+        /* キラキラアニメーションの定義 */
+        @keyframes shiny {
+            0% { transform: translateX(-100%) rotate(-45deg); }
+            100% { transform: translateX(100%) rotate(-45deg); }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>ガチャシミュレーター (1%)</h1>
+    <h1>プレミアム10連ガチャ (確率1%)</h1>
 
     <div class="stats">
         <div class="stat-box">総回転数<br><span id="totalCount" class="stat-number">0</span>/100</div>
-        <div class="stat-box">当たり<br><span id="hitCount" class="stat-number">0</span></div>
+        <div class="stat-box">🌟当たり🌟<br><span id="hitCount" class="stat-number">0</span></div>
         <div class="stat-box">ハズレ<br><span id="missCount" class="stat-number">0</span></div>
     </div>
 
     <div class="alert" id="alertMsg"></div>
 
     <div class="controls">
-        <button id="drawBtn" onclick="drawGacha()">10連を回す</button>
+        <button id="drawBtn" onclick="drawGacha()">💎 10連を回す 💎</button>
         <button id="resetBtn" onclick="resetGacha()">リセット</button>
     </div>
 
     <div class="log-area" id="logArea">
-        <div style="color: #999; text-align: center;">ここに結果が表示されます</div>
+        <div style="color: #999; text-align: center; padding-top: 120px;">ここに抽選結果が表示されます</div>
     </div>
 </div>
 
@@ -66,20 +200,16 @@
 
     // ガチャ実行関数
     function drawGacha() {
-        // 上限チェック
         if (totalDraws + BATCH_SIZE > MAX_DRAWS) {
             alertMsgEl.textContent = "これ以上回せません。リセットしてください。";
             return;
         }
-
-        alertMsgEl.textContent = ""; // アラート消去
+        alertMsgEl.textContent = "";
         
-        // 初回ログクリア（プレースホルダー削除）
         if (totalDraws === 0) {
             logAreaEl.innerHTML = '';
         }
 
-        // 10連抽選ループ
         let currentBatchResults = [];
         for (let i = 0; i < BATCH_SIZE; i++) {
             totalDraws++;
@@ -87,23 +217,21 @@
 
             if (isHit) {
                 hitCount++;
-                currentBatchResults.push('<span class="hit">【当たり！】</span>');
+                // 当たりの表示を少し豪華に
+                currentBatchResults.push('<span class="hit">✨【大当たり！】✨</span>');
             } else {
                 missCount++;
                 currentBatchResults.push('<span class="miss">ハズレ</span>');
             }
         }
 
-        // 画面更新
         updateDisplay();
         
-        // ログ追記
         const logEntry = document.createElement('div');
         logEntry.className = 'result-row';
-        logEntry.innerHTML = `<strong>${totalDraws-9}〜${totalDraws}回目:</strong> ` + currentBatchResults.join(', ');
-        logAreaEl.prepend(logEntry); // 新しい結果を上に表示
+        logEntry.innerHTML = `<strong style="color:#d4af37">${totalDraws-9}〜${totalDraws}回目:</strong><br>` + currentBatchResults.join(', ');
+        logAreaEl.prepend(logEntry);
 
-        // 100回に達したらボタンを無効化
         if (totalDraws >= MAX_DRAWS) {
             drawBtnEl.disabled = true;
             alertMsgEl.textContent = "上限の100回に達しました。リセットが必要です。";
@@ -116,12 +244,11 @@
         hitCount = 0;
         missCount = 0;
         updateDisplay();
-        logAreaEl.innerHTML = '<div style="color: #999; text-align: center;">リセットされました</div>';
+        logAreaEl.innerHTML = '<div style="color: #999; text-align: center; padding-top: 120px;">リセットされました</div>';
         drawBtnEl.disabled = false;
         alertMsgEl.textContent = "";
     }
 
-    // 表示更新ヘルパー
     function updateDisplay() {
         totalCountEl.textContent = totalDraws;
         hitCountEl.textContent = hitCount;
