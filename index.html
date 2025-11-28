@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>プレミアム単発ガチャシミュレーター</title>
     <style>
-        /* 全体の背景：高級感のあるダークグラデーションとパターン */
+        /* CSSは前回の豪華版と同じ（省略） */
+        /* ====== 前回の豪華版CSSをそのまま使用します ====== */
         body {
             font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
             text-align: center;
@@ -13,23 +14,21 @@
             background: linear-gradient(135deg, #1a0f3c 0%, #34206e 100%);
             color: #fff;
             min-height: 100vh;
-            overflow: hidden; /* 当たり演出がはみ出さないように */
+            overflow: hidden;
         }
         
-        /* メインコンテナ：カードのような立体感とゴールドの枠 */
         .container {
             max-width: 600px;
             margin: 0 auto;
-            background: rgba(40, 30, 70, 0.9); /* 半透明の暗い背景 */
+            background: rgba(40, 30, 70, 0.9);
             padding: 25px;
             border-radius: 15px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            border: 3px solid #d4af37; /* ゴールドの枠線 */
-            position: relative; /* ポップアップの基準位置に */
+            border: 3px solid #d4af37;
+            position: relative;
             z-index: 10;
         }
 
-        /* 見出し：ゴールドのグラデーション文字 */
         h1 {
             font-size: 28px;
             margin-bottom: 20px;
@@ -40,7 +39,6 @@
             font-weight: 800;
         }
 
-        /* ステータス表示エリア */
         .stats {
             display: flex;
             justify-content: space-around;
@@ -63,8 +61,10 @@
         }
         /* 当たり回数の強調 */
         #hitCount { color: #ffd700; text-shadow: 0 0 15px #ffd700; }
+        /* ダイヤ残高の強調 */
+        #diamondCount { color: #00e0ff; text-shadow: 0 0 15px #00aaff; }
 
-        /* ボタンエリア */
+
         .controls { margin: 30px 0; }
         button {
             padding: 15px 30px;
@@ -72,18 +72,16 @@
             font-weight: bold;
             cursor: pointer;
             border: none;
-            border-radius: 50px; /* 丸みのあるボタン */
+            border-radius: 50px;
             margin: 10px;
             transition: transform 0.1s, filter 0.2s;
             box-shadow: 0 5px 15px rgba(0,0,0,0.4);
             position: relative;
             overflow: hidden;
-            z-index: 1; /* キラキラエフェクトがボタンの上にくるように */
+            z-index: 1;
         }
-        /* ボタンを押した時の凹み効果 */
         button:active { transform: translateY(2px); box-shadow: 0 2px 5px rgba(0,0,0,0.4); }
 
-        /* メインのガチャボタン：ゴールドの立体感 */
         #drawBtn {
             background: linear-gradient(to bottom, #f6d365 0%, #fda085 100%);
             color: #521d03;
@@ -91,7 +89,6 @@
             box-shadow: inset 0 2px 0 rgba(255,255,255,0.5), 0 5px 15px rgba(246, 211, 101, 0.4);
             text-shadow: 0 1px 0 rgba(255,255,255,0.4);
         }
-        /* ボタンのキラキラエフェクト（疑似要素） */
         #drawBtn::after {
             content: "";
             position: absolute;
@@ -101,7 +98,7 @@
             height: 200%;
             background: linear-gradient(to bottom right, rgba(255,255,255,0) 30%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0) 70%);
             transform: rotate(-45deg);
-            animation: shiny 3s infinite linear; /* 下の@keyframesで定義 */
+            animation: shiny 3s infinite linear;
         }
 
         #drawBtn:disabled {
@@ -113,14 +110,12 @@
         }
         #drawBtn:disabled::after { animation: none; }
 
-        /* リセットボタン */
         #resetBtn {
             background: linear-gradient(to bottom, #ff6b6b, #c92a2a);
             color: white;
             border: 1px solid #ffcccc;
         }
 
-        /* ログエリア */
         .log-area {
             text-align: left;
             height: 300px;
@@ -128,11 +123,10 @@
             border: 2px solid #554a8c;
             padding: 15px;
             margin-top: 20px;
-            background: rgba(0,0,0,0.4); /* 暗い半透明 */
+            background: rgba(0,0,0,0.4);
             border-radius: 10px;
             box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
         }
-        /* スクロールバーのデザイン（Chrome/Safari用） */
         .log-area::-webkit-scrollbar { width: 10px; }
         .log-area::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 5px; }
         .log-area::-webkit-scrollbar-thumb { background: #554a8c; border-radius: 5px; }
@@ -143,31 +137,29 @@
             font-size: 14px;
             line-height: 1.6;
         }
-        /* 当たり演出：金色に発光 */
         .hit {
             color: #ffd700;
             font-weight: bold;
             font-size: 1.1em;
-            text-shadow: 0 0 10px #ffd700, 0 0 20px #ff8c00; /* 強い光彩 */
+            text-shadow: 0 0 10px #ffd700, 0 0 20px #ff8c00;
         }
         .miss { color: #a9a9a9; }
         
         .alert { color: #ff6b6b; margin-top: 10px; font-weight: bold; height: 24px; text-shadow: 0 0 5px rgba(255,0,0,0.5); }
 
-        /* キラキラアニメーションの定義 */
         @keyframes shiny {
             0% { transform: translateX(-100%) rotate(-45deg); }
             100% { transform: translateX(100%) rotate(-45deg); }
         }
 
-        /* ====== 当たり演出用CSS ====== */
+        /* 当たり演出用CSS */
         #hitEffectOverlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.7); /* 暗転 */
+            background-color: rgba(0,0,0,0.7);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -185,10 +177,13 @@
         .hit-message {
             font-size: 80px;
             font-weight: bold;
-            color: #ffd700; /* ゴールド */
-            text-shadow: 0 0 20px #ff8c00, 0 0 40px #ff0; /* 強力な発光 */
-            animation: pulse 1s infinite alternate, scaleIn 0.5s ease-out; /* 脈動と拡大 */
-            transform: scale(0);
+            color: #ffd700;
+            text-shadow: 0 0 20px #ff8c00, 0 0 40px #ff0;
+            animation: pulse 1s infinite alternate;
+        }
+
+        #hitEffectOverlay.active .hit-message {
+            animation: pulse 1s infinite alternate, scaleIn 0.5s ease-out forwards; 
         }
 
         @keyframes pulse {
@@ -197,9 +192,10 @@
         }
 
         @keyframes scaleIn {
-            from { transform: scale(0); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
         }
+        /* ====== CSSここまで ====== */
     </style>
 </head>
 <body>
@@ -208,7 +204,7 @@
     <h1>プレミアム単発ガチャ (確率1%)</h1>
 
     <div class="stats">
-        <div class="stat-box">総回転数<br><span id="totalCount" class="stat-number">0</span>/100</div>
+        <div class="stat-box">💎ダイヤ残高<br><span id="diamondCount" class="stat-number">10,000</span></div>
         <div class="stat-box">🌟当たり🌟<br><span id="hitCount" class="stat-number">0</span></div>
         <div class="stat-box">ハズレ<br><span id="missCount" class="stat-number">0</span></div>
     </div>
@@ -216,8 +212,8 @@
     <div class="alert" id="alertMsg"></div>
 
     <div class="controls">
-        <button id="drawBtn" onclick="drawGacha()">💎 1回引く 💎</button>
-        <button id="resetBtn" onclick="resetGacha()">リセット</button>
+        <button id="drawBtn" onclick="drawGacha()">💎 1回引く (100消費) 💎</button>
+        <button id="resetBtn" onclick="resetGacha()">ダイヤを補充</button>
     </div>
 
     <div class="log-area" id="logArea">
@@ -232,26 +228,30 @@
 <script>
     // 設定
     const PROBABILITY = 0.01; // 当たり確率 1%
-    const MAX_DRAWS = 100;    // 最大回転数
+    const INITIAL_DIAMOND = 10000; // 初期ダイヤ残高
+    const COST_PER_DRAW = 100;    // 1回あたりの消費ダイヤ
     const HIT_EFFECT_DURATION = 1500; // 当たり演出の表示時間（ミリ秒）
 
     // 状態変数
-    let totalDraws = 0;
+    let currentDiamond = INITIAL_DIAMOND; // ★変更
+    let totalDraws = 0; // 今回はログ記録用に維持
     let hitCount = 0;
     let missCount = 0;
 
-    const totalCountEl = document.getElementById('totalCount');
+    const diamondCountEl = document.getElementById('diamondCount'); // ★変更
     const hitCountEl = document.getElementById('hitCount');
     const missCountEl = document.getElementById('missCount');
     const logAreaEl = document.getElementById('logArea');
     const drawBtnEl = document.getElementById('drawBtn');
     const alertMsgEl = document.getElementById('alertMsg');
-    const hitEffectOverlayEl = document.getElementById('hitEffectOverlay'); // 新しい要素
+    const hitEffectOverlayEl = document.getElementById('hitEffectOverlay');
+    const hitMessageEl = hitEffectOverlayEl.querySelector('.hit-message');
 
     // ガチャ実行関数
     function drawGacha() {
-        if (totalDraws >= MAX_DRAWS) {
-            alertMsgEl.textContent = "上限の100回に達しました。リセットが必要です。";
+        // ダイヤ残高チェック (消費できるか確認)
+        if (currentDiamond < COST_PER_DRAW) {
+            alertMsgEl.textContent = "ダイヤがなくなりました。ダイヤを補充してください。";
             drawBtnEl.disabled = true;
             return;
         }
@@ -263,72 +263,88 @@
             logAreaEl.innerHTML = '';
         }
 
+        // 1. ダイヤ消費
+        currentDiamond -= COST_PER_DRAW; // ★変更
         totalDraws++;
+
+        // 2. 抽選
         const isHit = Math.random() < PROBABILITY;
         let resultMessage = '';
 
         if (isHit) {
             hitCount++;
             resultMessage = '<span class="hit">✨【大当たり！】✨</span>';
-            // 当たり演出を表示
             showHitEffect();
         } else {
             missCount++;
             resultMessage = '<span class="miss">ハズレ</span>';
+            // 演出がない場合のみ、ここでボタンを有効化
+            enableDrawButtonIfAble();
         }
 
-        // 画面更新は演出後に行うか、即時行うか選択（今回は即時+演出）
+        // 3. 画面更新とログ記録
         updateDisplay();
         
         const logEntry = document.createElement('div');
         logEntry.className = 'result-row';
-        logEntry.innerHTML = `<strong style="color:#d4af37">${totalDraws}回目:</strong> ` + resultMessage;
+        logEntry.innerHTML = `<strong style="color:#d4af37">${totalDraws}回目:</strong> (💎-${COST_PER_DRAW}) ` + resultMessage;
         logAreaEl.prepend(logEntry);
 
-        // 演出がない場合、または演出が終わった後にボタンを有効化
-        if (!isHit) {
-            enableDrawButtonIfAble();
+        // 4. ダイヤが0になったか最終チェック
+        if (currentDiamond < COST_PER_DRAW && !isHit) {
+            alertMsgEl.textContent = "ダイヤがなくなりました。ダイヤを補充してください。";
+            drawBtnEl.disabled = true;
         }
     }
 
-    // 当たり演出表示関数
+    // 当たり演出表示関数 (変更なし)
     function showHitEffect() {
-        hitEffectOverlayEl.classList.add('active'); // オーバーレイを表示
+        hitEffectOverlayEl.classList.add('active');
+        hitMessageEl.style.animation = 'none';
+        void hitMessageEl.offsetWidth;
+        hitMessageEl.style.animation = '';
 
         setTimeout(() => {
-            hitEffectOverlayEl.classList.remove('active'); // オーバーレイを非表示
-            enableDrawButtonIfAble(); // 演出終了後にボタンを有効化
+            hitEffectOverlayEl.classList.remove('active');
+            enableDrawButtonIfAble();
         }, HIT_EFFECT_DURATION);
     }
 
     // ガチャボタンを有効化するヘルパー関数
     function enableDrawButtonIfAble() {
-        if (totalDraws < MAX_DRAWS) {
+        // 残高が消費コスト以上ある場合のみ有効化
+        if (currentDiamond >= COST_PER_DRAW) { // ★変更
             drawBtnEl.disabled = false;
         } else {
-            drawBtnEl.disabled = true; // 100回超えたらやはり無効
-            alertMsgEl.textContent = "上限の100回に達しました。リセットが必要です。";
+            drawBtnEl.disabled = true;
+            // 残高が不足している場合にアラート表示を上書き
+            alertMsgEl.textContent = "ダイヤがなくなりました。ダイヤを補充してください。";
         }
     }
 
-    // リセット関数
+    // リセット関数 (ダイヤを初期値に補充)
     function resetGacha() {
+        currentDiamond = INITIAL_DIAMOND; // ★変更
         totalDraws = 0;
         hitCount = 0;
         missCount = 0;
         updateDisplay();
-        logAreaEl.innerHTML = '<div style="color: #999; text-align: center; padding-top: 120px;">リセットされました</div>';
-        enableDrawButtonIfAble(); // リセット後はボタンを有効化
+        logAreaEl.innerHTML = '<div style="color: #999; text-align: center; padding-top: 120px;">💎ダイヤが補充されました！</div>';
+        enableDrawButtonIfAble();
         alertMsgEl.textContent = "";
-        hitEffectOverlayEl.classList.remove('active'); // 念のため演出オーバーレイも消す
+        hitEffectOverlayEl.classList.remove('active');
     }
 
-    // 表示更新ヘルパー
+    // 表示更新ヘルパー (ダイヤ表示に対応)
     function updateDisplay() {
-        totalCountEl.textContent = totalDraws;
+        // 数値をカンマ区切りで表示
+        diamondCountEl.textContent = currentDiamond.toLocaleString(); // ★変更
         hitCountEl.textContent = hitCount;
         missCountEl.textContent = missCount;
     }
+    
+    // 初期表示の更新
+    updateDisplay();
 </script>
 
 </body>
