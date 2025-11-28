@@ -292,7 +292,7 @@
 
         // 4. ダイヤが0になったか最終チェック
         if (currentDiamond < COST_PER_DRAW && !isHit) {
-            alertMsgEl.textContent = "ダイヤがなくなりました。ダイヤを補充してください。";
+            alertMsgEl.textContent = "ダイヤがなくなりました。結果をプリントに記録してください。";
             drawBtnEl.disabled = true;
         }
     }
@@ -318,7 +318,7 @@
         } else {
             drawBtnEl.disabled = true;
             // 残高が不足している場合にアラート表示を上書き
-            alertMsgEl.textContent = "ダイヤがなくなりました。ダイヤを補充してください。";
+            alertMsgEl.textContent = "ダイヤがなくなりました。結果をプリントに記録してください。";
         }
     }
 
