@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>プレミアム10連ガチャ</title>
+    <title>プレミアム単発ガチャシミュレーター</title>
     <style>
         /* 全体の背景：高級感のあるダークグラデーションとパターン */
         body {
@@ -160,7 +160,7 @@
 <body>
 
 <div class="container">
-    <h1>プレミアム10連ガチャ (確率1%)</h1>
+    <h1>プレミアム単発ガチャ (確率1%)</h1>
 
     <div class="stats">
         <div class="stat-box">総回転数<br><span id="totalCount" class="stat-number">0</span>/100</div>
@@ -171,7 +171,7 @@
     <div class="alert" id="alertMsg"></div>
 
     <div class="controls">
-        <button id="drawBtn" onclick="drawGacha()">💎 10連を回す 💎</button>
+        <button id="drawBtn" onclick="drawGacha()">💎 1回引く 💎</button>
         <button id="resetBtn" onclick="resetGacha()">リセット</button>
     </div>
 
@@ -184,7 +184,7 @@
     // 設定
     const PROBABILITY = 0.01; // 当たり確率 1%
     const MAX_DRAWS = 100;    // 最大回転数
-    const BATCH_SIZE = 10;    // 1回の抽選数
+    // BATCH_SIZEは不要になったため削除
 
     // 状態変数
     let totalDraws = 0;
@@ -198,40 +198,45 @@
     const drawBtnEl = document.getElementById('drawBtn');
     const alertMsgEl = document.getElementById('alertMsg');
 
-    // ガチャ実行関数
+    // ガチャ実行関数 (1回抽選に変更)
     function drawGacha() {
-        if (totalDraws + BATCH_SIZE > MAX_DRAWS) {
-            alertMsgEl.textContent = "これ以上回せません。リセットしてください。";
+        // 上限チェック
+        if (totalDraws >= MAX_DRAWS) {
+            alertMsgEl.textContent = "上限の100回に達しました。リセットが必要です。";
+            drawBtnEl.disabled = true;
             return;
         }
-        alertMsgEl.textContent = "";
+
+        alertMsgEl.textContent = ""; // アラート消去
         
+        // 初回ログクリア（プレースホルダー削除）
         if (totalDraws === 0) {
             logAreaEl.innerHTML = '';
         }
 
-        let currentBatchResults = [];
-        for (let i = 0; i < BATCH_SIZE; i++) {
-            totalDraws++;
-            const isHit = Math.random() < PROBABILITY;
+        // 1回抽選を実行
+        totalDraws++;
+        const isHit = Math.random() < PROBABILITY;
+        let resultMessage = '';
 
-            if (isHit) {
-                hitCount++;
-                // 当たりの表示を少し豪華に
-                currentBatchResults.push('<span class="hit">✨【大当たり！】✨</span>');
-            } else {
-                missCount++;
-                currentBatchResults.push('<span class="miss">ハズレ</span>');
-            }
+        if (isHit) {
+            hitCount++;
+            resultMessage = '<span class="hit">✨【大当たり！】✨</span>';
+        } else {
+            missCount++;
+            resultMessage = '<span class="miss">ハズレ</span>';
         }
 
+        // 画面更新
         updateDisplay();
         
+        // ログ追記
         const logEntry = document.createElement('div');
         logEntry.className = 'result-row';
-        logEntry.innerHTML = `<strong style="color:#d4af37">${totalDraws-9}〜${totalDraws}回目:</strong><br>` + currentBatchResults.join(', ');
-        logAreaEl.prepend(logEntry);
+        logEntry.innerHTML = `<strong style="color:#d4af37">${totalDraws}回目:</strong> ` + resultMessage;
+        logAreaEl.prepend(logEntry); // 新しい結果を上に表示
 
+        // 100回に達したらボタンを無効化
         if (totalDraws >= MAX_DRAWS) {
             drawBtnEl.disabled = true;
             alertMsgEl.textContent = "上限の100回に達しました。リセットが必要です。";
@@ -249,6 +254,7 @@
         alertMsgEl.textContent = "";
     }
 
+    // 表示更新ヘルパー
     function updateDisplay() {
         totalCountEl.textContent = totalDraws;
         hitCountEl.textContent = hitCount;
