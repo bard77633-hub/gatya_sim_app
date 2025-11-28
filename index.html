@@ -13,6 +13,7 @@
             background: linear-gradient(135deg, #1a0f3c 0%, #34206e 100%);
             color: #fff;
             min-height: 100vh;
+            overflow: hidden; /* 当たり演出がはみ出さないように */
         }
         
         /* メインコンテナ：カードのような立体感とゴールドの枠 */
@@ -24,6 +25,8 @@
             border-radius: 15px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
             border: 3px solid #d4af37; /* ゴールドの枠線 */
+            position: relative; /* ポップアップの基準位置に */
+            z-index: 10;
         }
 
         /* 見出し：ゴールドのグラデーション文字 */
@@ -75,6 +78,7 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.4);
             position: relative;
             overflow: hidden;
+            z-index: 1; /* キラキラエフェクトがボタンの上にくるように */
         }
         /* ボタンを押した時の凹み効果 */
         button:active { transform: translateY(2px); box-shadow: 0 2px 5px rgba(0,0,0,0.4); }
@@ -155,6 +159,47 @@
             0% { transform: translateX(-100%) rotate(-45deg); }
             100% { transform: translateX(100%) rotate(-45deg); }
         }
+
+        /* ====== 当たり演出用CSS ====== */
+        #hitEffectOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7); /* 暗転 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+
+        #hitEffectOverlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .hit-message {
+            font-size: 80px;
+            font-weight: bold;
+            color: #ffd700; /* ゴールド */
+            text-shadow: 0 0 20px #ff8c00, 0 0 40px #ff0; /* 強力な発光 */
+            animation: pulse 1s infinite alternate, scaleIn 0.5s ease-out; /* 脈動と拡大 */
+            transform: scale(0);
+        }
+
+        @keyframes pulse {
+            from { text-shadow: 0 0 20px #ff8c00, 0 0 40px #ff0; }
+            to { text-shadow: 0 0 30px #ff8c00, 0 0 60px #ff0, 0 0 80px #ffd700; }
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -180,11 +225,15 @@
     </div>
 </div>
 
+<div id="hitEffectOverlay">
+    <div class="hit-message">WIN!!</div>
+</div>
+
 <script>
     // 設定
     const PROBABILITY = 0.01; // 当たり確率 1%
     const MAX_DRAWS = 100;    // 最大回転数
-    // BATCH_SIZEは不要になったため削除
+    const HIT_EFFECT_DURATION = 1500; // 当たり演出の表示時間（ミリ秒）
 
     // 状態変数
     let totalDraws = 0;
@@ -197,24 +246,23 @@
     const logAreaEl = document.getElementById('logArea');
     const drawBtnEl = document.getElementById('drawBtn');
     const alertMsgEl = document.getElementById('alertMsg');
+    const hitEffectOverlayEl = document.getElementById('hitEffectOverlay'); // 新しい要素
 
-    // ガチャ実行関数 (1回抽選に変更)
+    // ガチャ実行関数
     function drawGacha() {
-        // 上限チェック
         if (totalDraws >= MAX_DRAWS) {
             alertMsgEl.textContent = "上限の100回に達しました。リセットが必要です。";
             drawBtnEl.disabled = true;
             return;
         }
 
-        alertMsgEl.textContent = ""; // アラート消去
+        alertMsgEl.textContent = "";
+        drawBtnEl.disabled = true; // 演出中はボタンを無効化
         
-        // 初回ログクリア（プレースホルダー削除）
         if (totalDraws === 0) {
             logAreaEl.innerHTML = '';
         }
 
-        // 1回抽選を実行
         totalDraws++;
         const isHit = Math.random() < PROBABILITY;
         let resultMessage = '';
@@ -222,23 +270,43 @@
         if (isHit) {
             hitCount++;
             resultMessage = '<span class="hit">✨【大当たり！】✨</span>';
+            // 当たり演出を表示
+            showHitEffect();
         } else {
             missCount++;
             resultMessage = '<span class="miss">ハズレ</span>';
         }
 
-        // 画面更新
+        // 画面更新は演出後に行うか、即時行うか選択（今回は即時+演出）
         updateDisplay();
         
-        // ログ追記
         const logEntry = document.createElement('div');
         logEntry.className = 'result-row';
         logEntry.innerHTML = `<strong style="color:#d4af37">${totalDraws}回目:</strong> ` + resultMessage;
-        logAreaEl.prepend(logEntry); // 新しい結果を上に表示
+        logAreaEl.prepend(logEntry);
 
-        // 100回に達したらボタンを無効化
-        if (totalDraws >= MAX_DRAWS) {
-            drawBtnEl.disabled = true;
+        // 演出がない場合、または演出が終わった後にボタンを有効化
+        if (!isHit) {
+            enableDrawButtonIfAble();
+        }
+    }
+
+    // 当たり演出表示関数
+    function showHitEffect() {
+        hitEffectOverlayEl.classList.add('active'); // オーバーレイを表示
+
+        setTimeout(() => {
+            hitEffectOverlayEl.classList.remove('active'); // オーバーレイを非表示
+            enableDrawButtonIfAble(); // 演出終了後にボタンを有効化
+        }, HIT_EFFECT_DURATION);
+    }
+
+    // ガチャボタンを有効化するヘルパー関数
+    function enableDrawButtonIfAble() {
+        if (totalDraws < MAX_DRAWS) {
+            drawBtnEl.disabled = false;
+        } else {
+            drawBtnEl.disabled = true; // 100回超えたらやはり無効
             alertMsgEl.textContent = "上限の100回に達しました。リセットが必要です。";
         }
     }
@@ -250,8 +318,9 @@
         missCount = 0;
         updateDisplay();
         logAreaEl.innerHTML = '<div style="color: #999; text-align: center; padding-top: 120px;">リセットされました</div>';
-        drawBtnEl.disabled = false;
+        enableDrawButtonIfAble(); // リセット後はボタンを有効化
         alertMsgEl.textContent = "";
+        hitEffectOverlayEl.classList.remove('active'); // 念のため演出オーバーレイも消す
     }
 
     // 表示更新ヘルパー
