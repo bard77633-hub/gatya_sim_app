@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10連ガチャシミュレーター</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 20px; background-color: #f0f0f0; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h1 { font-size: 24px; color: #333; }
+        .stats { display: flex; justify-content: space-around; margin: 20px 0; background: #eee; padding: 10px; border-radius: 4px; }
+        .stat-box { font-weight: bold; }
+        .stat-number { font-size: 20px; color: #007bff; }
+        .controls { margin: 20px 0; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; border: none; border-radius: 4px; margin: 5px; }
+        #drawBtn { background-color: #007bff; color: white; }
+        #drawBtn:disabled { background-color: #ccc; cursor: not-allowed; }
+        #resetBtn { background-color: #dc3545; color: white; }
+        .log-area { text-align: left; height: 300px; overflow-y: scroll; border: 1px solid #ddd; padding: 10px; margin-top: 10px; background: #fafafa; }
+        .result-row { border-bottom: 1px solid #eee; padding: 5px 0; font-size: 14px; }
+        .hit { color: red; font-weight: bold; }
+        .miss { color: #666; }
+        .alert { color: red; margin-top: 10px; font-weight: bold; height: 24px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>ガチャシミュレーター (1%)</h1>
+
+    <div class="stats">
+        <div class="stat-box">総回転数<br><span id="totalCount" class="stat-number">0</span>/100</div>
+        <div class="stat-box">当たり<br><span id="hitCount" class="stat-number">0</span></div>
+        <div class="stat-box">ハズレ<br><span id="missCount" class="stat-number">0</span></div>
+    </div>
+
+    <div class="alert" id="alertMsg"></div>
+
+    <div class="controls">
+        <button id="drawBtn" onclick="drawGacha()">10連を回す</button>
+        <button id="resetBtn" onclick="resetGacha()">リセット</button>
+    </div>
+
+    <div class="log-area" id="logArea">
+        <div style="color: #999; text-align: center;">ここに結果が表示されます</div>
+    </div>
+</div>
+
+<script>
+    // 設定
+    const PROBABILITY = 0.01; // 当たり確率 1%
+    const MAX_DRAWS = 100;    // 最大回転数
+    const BATCH_SIZE = 10;    // 1回の抽選数
+
+    // 状態変数
+    let totalDraws = 0;
+    let hitCount = 0;
+    let missCount = 0;
+
+    const totalCountEl = document.getElementById('totalCount');
+    const hitCountEl = document.getElementById('hitCount');
+    const missCountEl = document.getElementById('missCount');
+    const logAreaEl = document.getElementById('logArea');
+    const drawBtnEl = document.getElementById('drawBtn');
+    const alertMsgEl = document.getElementById('alertMsg');
+
+    // ガチャ実行関数
+    function drawGacha() {
+        // 上限チェック
+        if (totalDraws + BATCH_SIZE > MAX_DRAWS) {
+            alertMsgEl.textContent = "これ以上回せません。リセットしてください。";
+            return;
+        }
+
+        alertMsgEl.textContent = ""; // アラート消去
+        
+        // 初回ログクリア（プレースホルダー削除）
+        if (totalDraws === 0) {
+            logAreaEl.innerHTML = '';
+        }
+
+        // 10連抽選ループ
+        let currentBatchResults = [];
+        for (let i = 0; i < BATCH_SIZE; i++) {
+            totalDraws++;
+            const isHit = Math.random() < PROBABILITY;
+
+            if (isHit) {
+                hitCount++;
+                currentBatchResults.push('<span class="hit">【当たり！】</span>');
+            } else {
+                missCount++;
+                currentBatchResults.push('<span class="miss">ハズレ</span>');
+            }
+        }
+
+        // 画面更新
+        updateDisplay();
+        
+        // ログ追記
+        const logEntry = document.createElement('div');
+        logEntry.className = 'result-row';
+        logEntry.innerHTML = `<strong>${totalDraws-9}〜${totalDraws}回目:</strong> ` + currentBatchResults.join(', ');
+        logAreaEl.prepend(logEntry); // 新しい結果を上に表示
+
+        // 100回に達したらボタンを無効化
+        if (totalDraws >= MAX_DRAWS) {
+            drawBtnEl.disabled = true;
+            alertMsgEl.textContent = "上限の100回に達しました。リセットが必要です。";
+        }
+    }
+
+    // リセット関数
+    function resetGacha() {
+        totalDraws = 0;
+        hitCount = 0;
+        missCount = 0;
+        updateDisplay();
+        logAreaEl.innerHTML = '<div style="color: #999; text-align: center;">リセットされました</div>';
+        drawBtnEl.disabled = false;
+        alertMsgEl.textContent = "";
+    }
+
+    // 表示更新ヘルパー
+    function updateDisplay() {
+        totalCountEl.textContent = totalDraws;
+        hitCountEl.textContent = hitCount;
+        missCountEl.textContent = missCount;
+    }
+</script>
+
+</body>
+</html>
